@@ -54,47 +54,52 @@ def processing_data(data):
 
     return data
 
-# Read training data
-titanic = pandas.read_csv("train.csv")
-titanic = titanic.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1)
 
-titanic = processing_data(titanic)
+def main():
+    # Read training data
+    titanic = pandas.read_csv("train.csv")
+    titanic = titanic.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1)
 
-# Read test data
-titanic_test = pandas.read_csv("test.csv")
-titanic_test = titanic_test.drop(['Name', 'Ticket', 'Cabin'], axis=1)
-titanic_test["Fare"] = titanic_test["Fare"].fillna(titanic_test["Fare"].median())
+    titanic = processing_data(titanic)
 
-titanic_test = processing_data(titanic_test)
+    # Read test data
+    titanic_test = pandas.read_csv("test.csv")
+    titanic_test = titanic_test.drop(['Name', 'Ticket', 'Cabin'], axis=1)
+    titanic_test["Fare"] = titanic_test["Fare"].fillna(titanic_test["Fare"].median())
 
-# Define test and train
+    titanic_test = processing_data(titanic_test)
 
-X_train = titanic.drop("Survived", axis=1)
-Y_train = titanic["Survived"]
-X_test = titanic_test.drop("PassengerId", axis=1).copy()
+    # Define test and train
 
-svc = SVC()
-random_forest = RandomForestClassifier(n_estimators=100)
-logistic_regression = LogisticRegression()
-knn = KNeighborsClassifier()
-gaussian = GaussianNB()
+    X_train = titanic.drop("Survived", axis=1)
+    Y_train = titanic["Survived"]
+    X_test = titanic_test.drop("PassengerId", axis=1).copy()
 
-algs = [svc, random_forest, logistic_regression, knn, gaussian]
-scores = []
+    svc = SVC()
+    random_forest = RandomForestClassifier(n_estimators=100)
+    logistic_regression = LogisticRegression()
+    knn = KNeighborsClassifier()
+    gaussian = GaussianNB()
 
-for alg in algs:
-    alg.fit(X_train, Y_train)
-    score = alg.score(X_train, Y_train)
-    print(alg, score)
-    scores.append(score)
+    algs = [svc, random_forest, logistic_regression, knn, gaussian]
+    scores = []
 
-alg = algs[np.argmax(scores)]
-print(alg)
-Y_pred = alg.predict(X_test)
+    for alg in algs:
+        alg.fit(X_train, Y_train)
+        score = alg.score(X_train, Y_train)
+        print(alg, score)
+        scores.append(score)
 
-# Create a new data frame with only the columns Kaggle wants from the dataset.
-submission = pandas.DataFrame({
-        "PassengerId": titanic_test["PassengerId"],
-        "Survived": Y_pred
-    })
-submission.to_csv("titanic.csv", index=False)
+    alg = algs[np.argmax(scores)]
+    print(alg)
+    Y_pred = alg.predict(X_test)
+
+    # Create a new data frame with only the columns Kaggle wants from the dataset.
+    submission = pandas.DataFrame({
+            "PassengerId": titanic_test["PassengerId"],
+            "Survived": Y_pred
+        })
+    submission.to_csv("titanic.csv", index=False)
+
+if __name__ == "__main__":
+    main()
