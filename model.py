@@ -74,7 +74,7 @@ alg = algs[np.argmax(results, axis=0)]
 titanic_test = pandas.read_csv("test.csv")
 titanic_test = titanic_test.drop(['Name', 'Ticket', 'Cabin'], axis=1)
 # change nan values in Age colum
-titanic_test["Age"] = processing_data(titanic_test)
+titanic_test = processing_data(titanic_test)
 
 # Train the algorithm using all the training data
 alg.fit(titanic, titanic["Survived"])
