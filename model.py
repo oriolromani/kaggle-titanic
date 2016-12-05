@@ -1,4 +1,5 @@
 import pandas
+import re
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
@@ -10,6 +11,16 @@ from sklearn.naive_bayes import GaussianNB
 def get_person(passenger):
     age, sex = passenger
     return 'child' if age < 16 else sex
+
+
+def get_title(name):
+    # Use a regular expression to search for a title.
+    # Titles always consist of capital and lowercase letters, and end with a period.
+    title_search = re.search(' ([A-Za-z]+)\.', name)
+    # If the title exists, extract and return it.
+    if title_search:
+        return title_search.group(1)
+    return ""
 
 
 def processing_data(data):
@@ -52,19 +63,29 @@ def processing_data(data):
     data.drop(['Pclass'], axis=1, inplace=True)
     data = data.join(pclass_dummies_titanic)
 
+    title_mapping = {"Mr": 1, "Miss": 2, "Mrs": 3, "Master": 4, "Dr": 5, "Rev": 6, "Major": 7, "Col": 7, "Mlle": 8,
+                     "Mme": 8, "Don": 9, "Lady": 10, "Countess": 10, "Jonkheer": 10, "Sir": 9, "Capt": 7, "Ms": 2}
+    titles = data["Name"].apply(get_title)
+    for k, v in title_mapping.items():
+        titles[titles == k] = v
+
+    # Add in the title column and drop Name
+    data["Title"] = titles
+    data.drop(["Name"], axis=1, inplace=True)
+
     return data
 
 
 def main():
     # Read training data
     titanic = pandas.read_csv("train.csv")
-    titanic = titanic.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1)
+    titanic = titanic.drop(['PassengerId', 'Ticket', 'Cabin'], axis=1)
 
     titanic = processing_data(titanic)
 
     # Read test data
     titanic_test = pandas.read_csv("test.csv")
-    titanic_test = titanic_test.drop(['Name', 'Ticket', 'Cabin'], axis=1)
+    titanic_test = titanic_test.drop(['Ticket', 'Cabin'], axis=1)
     titanic_test["Fare"] = titanic_test["Fare"].fillna(titanic_test["Fare"].median())
 
     titanic_test = processing_data(titanic_test)
